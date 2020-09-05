@@ -1,7 +1,9 @@
-import React, {useState, useEffect} from 'react';
-import Pagination from '../components/Pagination';
-import axios from 'axios';
 import moment from "moment";
+import React, { useEffect, useState } from 'react';
+import Pagination from '../components/Pagination';
+import PaginationContext from "../contexts/PaginationContext";
+import InvoicesAPI from '../services/invoicesAPI';
+
 
 const STATUS_CLASSES = {
     PAID: "success",
@@ -18,14 +20,14 @@ const STATUS_LABELS = {
 const InvoicesPage = (props) => {
     const [invoices, setInvoices] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState('');
 
+    const itemsPerPage = 10;
 
+    // Récupération des données auprès de l'API
     const fetchInvoices = async () => {
         try {
-            const data = await axios
-                .get("http://localhost:8000/api/invoices")
-                .then(response => response.data["hydra:member"]);
+            const data = await InvoicesAPI.findAll();
             setInvoices(data);
         } catch(error) {
             console.log(error.response);
@@ -33,12 +35,15 @@ const InvoicesPage = (props) => {
 
     }
 
+    // Charger les données à l'arrivée sur la page
     useEffect(() => {
         fetchInvoices();
     }, [])
 
+    // Gestion du format de date
     const formatDate = (str) => moment(str).format('DD/MM/YYYY');
 
+    // Changement de page
     const handlePageChange = (page) => setCurrentPage(page);
 
     const handleSearch = ({currentTarget}) => {
@@ -46,12 +51,42 @@ const InvoicesPage = (props) => {
         setCurrentPage(1);
     }
 
+    // Gestion de la recherche
+    const filteredInvoices = invoices.filter(
+        i => 
+        i.customer.firstName.toLowerCase().includes(search.toLowerCase()) ||
+        i.customer.lastName.toLowerCase().includes(search.toLowerCase()) ||
+        i.amount.toString().includes(search.toLowerCase()) ||
+        STATUS_LABELS[i.status].toLowerCase().startsWith(search.toLowerCase())
+    );
+
+    // Pagination des données
+    const paginatedInvoices = Pagination.getData(filteredInvoices, currentPage, itemsPerPage);
+
+    // Suppression d'une facture
+    const handleDelete = async id => {
+        const originalInvoices = [...invoices];
+
+        setInvoices(invoices.filter(invoice => invoice.id !== id));
+
+        try {
+            await InvoicesAPI.delete(id);
+        } catch (error) {
+            console.log(error.response);
+            setInvoices(originalInvoices);
+        }
+    }
+
     if (!invoices) {
         return <p>loading...</p>
     } else { 
     return ( 
-        <>
+            <PaginationContext.Provider value={{currentPage, itemsPerPage, invoices, handlePageChange, filteredInvoices }}>
             <h1>Liste des factures</h1>
+
+            <div className="form-group">
+                <input type="text" onChange={handleSearch} value={search} className="form-control" placeholder="Rechercher..."/>
+            </div>
 
             <table className="table table-hover">
                 <thead>
@@ -65,7 +100,7 @@ const InvoicesPage = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {invoices.map(invoice => {
+                    {paginatedInvoices.map(invoice => {
                         return (
                             <tr key={invoice.id}>
                                 <td>{invoice.chrono}</td>
@@ -79,7 +114,7 @@ const InvoicesPage = (props) => {
                                 <td className="text-center">{invoice.amount.toLocaleString()} €</td>
                                 <td>
                                     <button className="btn btn-sm btn-primary mr-1">Editer</button>
-                                    <button className="btn btn-sm btn-danger">Supprimer</button>
+                                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(invoice.id)}>Supprimer</button>
                                 </td>
                             </tr> 
                         );
@@ -88,7 +123,7 @@ const InvoicesPage = (props) => {
             </table>
 
             <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} onPageChanged={handlePageChange} length={invoices.length} />
-        </>
+        </PaginationContext.Provider>
      );
     }
 }

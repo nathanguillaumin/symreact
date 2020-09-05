@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import PaginationContext from '../contexts/PaginationContext';
 
 const Pagination = () => {
-    const { currentPage, itemsPerPage, customers, handlePageChange, totalItems, filteredCustomers } = useContext(PaginationContext);
+    const { currentPage, itemsPerPage, customers, handlePageChange, totalItems, filteredCustomers, filteredInvoices } = useContext(PaginationContext);
 
-    const pagesCount = Math.ceil(filteredCustomers.length / itemsPerPage);
+    const pagesCount = Math.ceil(filteredCustomers ? filteredCustomers.length : filteredInvoices.length / itemsPerPage);
     const pages = [];
 
     for(let i = 1; i <= pagesCount; i++) {
