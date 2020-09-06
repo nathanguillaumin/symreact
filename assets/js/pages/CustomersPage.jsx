@@ -109,7 +109,7 @@ const CustomersPage = (props) => {
                         }
                     </tbody>
             </table>
-            {itemsPerPage < filteredCustomers.length && <Pagination />}
+            {itemsPerPage < filteredCustomers.length && <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} onPageChanged={handlePageChange} length={customers.length} />}
         </PaginationContext.Provider>
     );
     }

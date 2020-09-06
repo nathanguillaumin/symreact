@@ -3,6 +3,7 @@
         "@babel/preset-react": "^7.10.4",
         "@symfony/webpack-encore": "^0.30.0",
         "core-js": "^3.0.0",
+        "prettier": "2.1.1",
         "regenerator-runtime": "^0.13.2",
         "webpack-notifier": "^1.6.0"
     },
@@ -16,6 +17,7 @@
     },
     "dependencies": {
         "axios": "^0.18.0",
+        "jwt-decode": "^2.2.0",
         "moment": "^2.27.0",
         "react": "^16.8.6",
         "react-dom": "^16.8.6",
