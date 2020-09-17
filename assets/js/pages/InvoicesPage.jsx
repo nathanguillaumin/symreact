@@ -4,6 +4,8 @@ import Pagination from '../components/Pagination';
 import PaginationContext from "../contexts/PaginationContext";
 import InvoicesAPI from '../services/invoicesAPI';
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import TableLoader from "../components/loaders/TableLoader";
 
 
 const STATUS_CLASSES = {
@@ -22,7 +24,7 @@ const InvoicesPage = (props) => {
     const [invoices, setInvoices] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
-
+    const [loading, setLoading] = useState(true);
     const itemsPerPage = 10;
 
     // Récupération des données auprès de l'API
@@ -30,8 +32,10 @@ const InvoicesPage = (props) => {
         try {
             const data = await InvoicesAPI.findAll();
             setInvoices(data);
+            setLoading(false)
         } catch(error) {
             console.log(error.response);
+            toast.error("Erreur lors des chargements des factures")
         }
 
     }
@@ -72,15 +76,13 @@ const InvoicesPage = (props) => {
 
         try {
             await InvoicesAPI.delete(id);
+            toast.success("La facture a bien été supprimée !")
         } catch (error) {
-            console.log(error.response);
+            toast.error("Une erreur est survenue")
             setInvoices(originalInvoices);
         }
     }
 
-    if (!invoices) {
-        return <p>loading...</p>
-    } else { 
     return ( 
             <PaginationContext.Provider value={{currentPage, itemsPerPage, invoices, handlePageChange, filteredInvoices }}>
             <div className="d-flex justify-content-between align-items-center">
@@ -103,13 +105,13 @@ const InvoicesPage = (props) => {
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                {!loading && <tbody>
                     {paginatedInvoices.map(invoice => {
                         return (
                             <tr key={invoice.id}>
                                 <td>{invoice.chrono}</td>
                                 <td>
-                                    <a href="#">{invoice.customer.firstName} {invoice.customer.lastName}</a>
+                                    <Link to={"/customers/" + invoice.customer.id}>{invoice.customer.firstName} {invoice.customer.lastName}</Link>
                                 </td>
                                 <td className="text-center">{formatDate(invoice.sentAt)}</td>
                                 <td className="text-center">
@@ -123,13 +125,14 @@ const InvoicesPage = (props) => {
                             </tr> 
                         );
                     })}
-                </tbody>
+                </tbody>}
             </table>
+
+            {loading && <TableLoader/>}
 
             <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} onPageChanged={handlePageChange} length={invoices.length} />
         </PaginationContext.Provider>
      );
-    }
 }
  
 export default InvoicesPage;
