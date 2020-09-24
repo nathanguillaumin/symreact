@@ -7,7 +7,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-$dotenv = \Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = new Dotenv(__DIR__);
+if(file_exists(".env")) {
+    $dotenv->load();
+}
 
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
