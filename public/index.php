@@ -7,8 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-(new Dotenv())->load(__DIR__.'/../.env');
-
+(new Dotenv())->load(__DIR__.'/../');
 
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
