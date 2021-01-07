@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Invoice;
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 
 // La classe doit avoir le même nom que le fichier en Symfony
